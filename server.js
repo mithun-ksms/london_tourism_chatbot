@@ -241,7 +241,7 @@ async function getWeather(city = "London", season = "", condition = "", profile 
   
   try {
     const { data } = await axios.get(
-      `https://api.openweathermap.org/data/2.5/weather?q=${city},uk&units=metric&appid=${WEATHER_API_KEY}`
+      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${WEATHER_API_KEY}`
     );
     
     // If we have a season parameter but not current weather data, use Gemini instead
