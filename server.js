@@ -73,8 +73,10 @@ setInterval(() => {
   }
 }, 2 * 60 * 1000); // run every 2 mins
 
+app.use(express.static(path.join(__dirname)));
+
 app.get("/", (req, res) => {
-  res.send("✅ London Tourism Chatbot Webhook is running with Comprehensive Intent Support");
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
 // ==== GEMINI AI RESPONSE ====
