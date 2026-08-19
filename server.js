@@ -203,7 +203,7 @@ async function getGeminiResponse(userId, userQuery, parameters = {}, intentName 
       }));
 
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
       {
         system_instruction: { parts: [{ text: systemMessage }] },
         contents: geminiContents,
@@ -507,16 +507,17 @@ app.post("/api/chat", async (req, res) => {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: "message is required" });
 
-  const prompt = `You are Jojo, a friendly and knowledgeable AI travel assistant specialising in London tourism.
-Answer the following question helpfully, concisely and accurately. Focus on practical, useful information.
-Keep your response under 150 words. Do not use markdown formatting.
+  const prompt = `You are Jojo, a sharp London travel assistant. Give short, direct answers only.
+- Max 3-4 sentences. No bullet points unless listing places.
+- No intro phrases like "Great question!" or "Certainly!". Just answer.
+- Be conversational and friendly but brief.
 
-User question: ${message}`;
+Question: ${message}`;
 
   try {
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
-      { contents: [{ parts: [{ text: prompt }] }] },
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
+      { contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 120, temperature: 0.7 } },
       { headers: { "Content-Type": "application/json" } }
     );
     const reply = response.data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
@@ -588,7 +589,7 @@ IMPORTANT: Please format with clear sections for each day. Put the schedule in a
 
   try {
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
       { contents: [{ parts: [{ text: prompt }] }] },
       { headers: { "Content-Type": "application/json" } }
     );
@@ -824,7 +825,7 @@ app.post("/api/itinerary", async (req, res) => {
   const prompt = `Create a detailed ${days}-day London itinerary for a ${visitType} trip. Interests include: ${interests.join(", ")}. Daily budget: ${budget}. Include day-by-day time slots (9:00 AM format), specific attractions, transportation info, and budget tips.`;
   try {
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
       { contents: [{ parts: [{ text: prompt }] }] },
       { headers: { "Content-Type": "application/json" } }
     );
