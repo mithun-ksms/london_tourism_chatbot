@@ -1,4 +1,4 @@
-// COMPREHENSIVE London Tourism Chatbot  Webhook with All Intent Support
+// COMPREHENSIVE London Tourism Chatbot Webhook with All Intent Support
 require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -501,6 +501,32 @@ function toMessengerCard(text, title = "London Travel Info") {
     source: "london-tourism-chatbot"
   };
 }
+
+// ==== DIRECT CHAT ENDPOINT (frontend calls this directly, bypassing Dialogflow timeout) ====
+app.post("/api/chat", async (req, res) => {
+  const { message } = req.body;
+  if (!message) return res.status(400).json({ error: "message is required" });
+
+  const prompt = `You are Jojo, a friendly and knowledgeable AI travel assistant specialising in London tourism.
+Answer the following question helpfully, concisely and accurately. Focus on practical, useful information.
+Keep your response under 150 words. Do not use markdown formatting.
+
+User question: ${message}`;
+
+  try {
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
+      { contents: [{ parts: [{ text: prompt }] }] },
+      { headers: { "Content-Type": "application/json" } }
+    );
+    const reply = response.data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if (!reply) return res.status(502).json({ error: "No reply from Gemini" });
+    res.json({ reply });
+  } catch (err) {
+    console.error("❌ Chat endpoint error:", err.response?.data || err.message);
+    res.status(500).json({ error: "Unable to get response" });
+  }
+});
 
 // ==== FRONTEND PROXY ENDPOINTS ====
 // These exist so the frontend never needs to hold API keys itself.
