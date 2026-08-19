@@ -2197,25 +2197,95 @@
         const data = await response.json();
         let generatedItinerary = data.itinerary;
 
-        // Convert markdown to clean readable HTML
+        // Split into day sections
+        const dayBlocks = generatedItinerary.split(/(?=##?\s*Day\s*\d+|Day\s*\d+:)/gi).filter(b => b.trim());
+
+        let daysHTML = '';
+        dayBlocks.forEach(block => {
+          // Split activity schedule from transport/budget/tips section
+          const splitPoint = block.search(/Transportation Information|Budget Breakdown|Tips & Useful|Tips and Useful|Useful Information/i);
+          
+          const scheduleText = splitPoint > -1 ? block.substring(0, splitPoint) : block;
+          const infoText = splitPoint > -1 ? block.substring(splitPoint) : '';
+
+          // Build schedule rows
+          const lines = scheduleText.split('\n').filter(l => l.trim());
+          const dayTitle = lines[0].replace(/#+\s*/, '').replace(/\*+/g, '').trim();
+          
+          let tableRows = '';
+          lines.slice(1).forEach(line => {
+            const timeMatch = line.match(/(\d{1,2}:\d{2}\s*[AP]M\s*[-–]\s*\d{1,2}:\d{2}\s*[AP]M)/i);
+            if (timeMatch) {
+              const time = timeMatch[0];
+              const activity = line.replace(timeMatch[0], '').replace(/^[:\-\s]+/, '').replace(/\*+/g, '').trim();
+              if (activity) {
+                tableRows += `<tr>
+                  <td style="white-space:nowrap;font-weight:600;color:#2c3e50;width:180px">${time}</td>
+                  <td>${activity}</td>
+                </tr>`;
+              }
+            }
+          });
+
+          // Format the info section into clean cards
+          let infoHTML = '';
+          if (infoText) {
+            const infoLines = infoText.split('\n').filter(l => l.trim());
+            let currentSection = '';
+            let currentItems = [];
+
+            const flushSection = () => {
+              if (currentSection && currentItems.length) {
+                const icon = currentSection.toLowerCase().includes('transport') ? '🚇' :
+                             currentSection.toLowerCase().includes('budget') ? '💷' : '💡';
+                infoHTML += `
+                  <div style="background:#f8f9fa;border-left:4px solid #3498db;padding:15px 20px;margin:15px 0;border-radius:6px">
+                    <h4 style="color:#2980b9;margin:0 0 10px 0">${icon} ${currentSection.replace(/\*+/g,'').trim()}</h4>
+                    <ul style="margin:0;padding-left:20px">
+                      ${currentItems.map(i => `<li style="margin:6px 0">${i}</li>`).join('')}
+                    </ul>
+                  </div>`;
+                currentItems = [];
+              }
+            };
+
+            infoLines.forEach(line => {
+              const clean = line.replace(/\*+/g, '').replace(/^#+\s*/, '').trim();
+              if (!clean) return;
+              if (line.match(/^#{1,3}\s|^(Transportation|Budget|Tips|Getting Around|Useful)/i)) {
+                flushSection();
+                currentSection = clean;
+              } else if (line.match(/^[\*\-•]\s/) || line.match(/^\d+\.\s/)) {
+                currentItems.push(clean.replace(/^[\*\-•\d\.]\s*/, ''));
+              } else if (currentSection) {
+                currentItems.push(clean);
+              }
+            });
+            flushSection();
+          }
+
+          daysHTML += `
+            <div class="day-section">
+              <h2>${dayTitle || 'Day'}</h2>
+              ${tableRows ? `
+                <table class="time-table">
+                  <thead><tr><th>Time</th><th>Activity</th></tr></thead>
+                  <tbody>${tableRows}</tbody>
+                </table>` : `<p style="color:#666">No schedule found for this day.</p>`}
+              ${infoHTML}
+            </div>`;
+        });
+
         const formattedHTML = `
           <div class="itinerary-container">
             <div class="itinerary-header">
               <h2>${days}-Day London Itinerary for ${formatVisitType(visitType)}</h2>
             </div>
-            <div class="day-section" style="white-space: pre-wrap; line-height: 1.8; padding: 25px; font-size: 15px;">
-              ${generatedItinerary
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/^#{1,3}\s+(.+)$/gm, '<h3 style="color:#2c3e50;margin-top:20px">$1</h3>')
-                .replace(/^\*\s+(.+)$/gm, '• $1')
-                .replace(/\n/g, '<br>')
-              }
+            ${daysHTML}
+            <div style="text-align:center;margin-top:30px">
+              <a href="javascript:window.print()" class="print-btn">🖨️ Print Itinerary</a>
             </div>
-            <div style="text-align: center; margin-top: 30px;">
-              <a href="javascript:window.print()" class="print-btn">Print Itinerary</a>
-            </div>
-          </div>
-        `;
+          </div>`;
 
         itineraryResult.innerHTML = formattedHTML;
         itineraryResult.style.display = 'block';
