@@ -203,7 +203,7 @@ async function getGeminiResponse(userId, userQuery, parameters = {}, intentName 
       }));
 
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         system_instruction: { parts: [{ text: systemMessage }] },
         contents: geminiContents,
@@ -562,7 +562,7 @@ IMPORTANT: Please format with clear sections for each day. Put the schedule in a
 
   try {
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       { contents: [{ parts: [{ text: prompt }] }] },
       { headers: { "Content-Type": "application/json" } }
     );
@@ -798,7 +798,7 @@ app.post("/api/itinerary", async (req, res) => {
   const prompt = `Create a detailed ${days}-day London itinerary for a ${visitType} trip. Interests include: ${interests.join(", ")}. Daily budget: ${budget}. Include day-by-day time slots (9:00 AM format), specific attractions, transportation info, and budget tips.`;
   try {
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       { contents: [{ parts: [{ text: prompt }] }] },
       { headers: { "Content-Type": "application/json" } }
     );
