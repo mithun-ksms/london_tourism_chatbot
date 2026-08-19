@@ -2482,6 +2482,83 @@
       setInterval(updateWeatherForecast, 1800000); // every 30 min
       setInterval(updateTransportStatus, 300000);  // every 5 min
     });
+
+    // ==== GEMINI DIRECT CHAT (bypasses Dialogflow webhook timeout) ====
+    // Greetings that Dialogflow handles fine with static responses — no need to call Gemini
+    const STATIC_INTENTS = ['hi', 'hello', 'hey', 'bye', 'goodbye', 'thanks', 'thank you', 'ok', 'okay', 'yes', 'no'];
+
+    function isStaticMessage(text) {
+      return STATIC_INTENTS.some(word => text.trim().toLowerCase() === word);
+    }
+
+    async function getGeminiChatResponse(userMessage) {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userMessage })
+        });
+        if (!response.ok) throw new Error('Chat API error');
+        const data = await response.json();
+        return data.reply || null;
+      } catch (err) {
+        console.error('Gemini chat error:', err);
+        return null;
+      }
+    }
+
+    function injectMessageIntoChat(text) {
+      try {
+        const dfMessenger = document.querySelector('df-messenger');
+        if (!dfMessenger) return;
+        const chat = dfMessenger.shadowRoot.querySelector('df-messenger-chat');
+        if (!chat) return;
+        const messageList = chat.shadowRoot.querySelector('df-message-list');
+        if (!messageList) return;
+
+        // Create a bot message element and inject it
+        const msgDiv = document.createElement('div');
+        msgDiv.style.cssText = `
+          background: #f1f3f4;
+          border-radius: 18px 18px 18px 4px;
+          padding: 12px 16px;
+          margin: 8px 16px;
+          max-width: 80%;
+          font-size: 14px;
+          line-height: 1.5;
+          color: #202124;
+          display: inline-block;
+        `;
+        msgDiv.textContent = text;
+
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'display: flex; justify-content: flex-start; margin: 4px 0;';
+        wrapper.appendChild(msgDiv);
+        messageList.appendChild(wrapper);
+        messageList.scrollTop = messageList.scrollHeight;
+      } catch (err) {
+        console.error('Could not inject message:', err);
+      }
+    }
+
+    // Listen for user messages sent to Dialogflow and send them to Gemini in parallel
+    window.addEventListener('df-messenger-loaded', () => {
+      const dfMessenger = document.querySelector('df-messenger');
+      if (!dfMessenger) return;
+
+      dfMessenger.addEventListener('df-request-sent', async (e) => {
+        const userMessage = e.detail?.requestBody?.queryInput?.text?.text;
+        if (!userMessage || isStaticMessage(userMessage)) return;
+
+        // Give Dialogflow 2 seconds to respond first, then overlay with Gemini answer
+        setTimeout(async () => {
+          const geminiReply = await getGeminiChatResponse(userMessage);
+          if (geminiReply) {
+            injectMessageIntoChat(geminiReply);
+          }
+        }, 2000);
+      });
+    });
   </script>
 </body>
 </html>
