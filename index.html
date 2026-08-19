@@ -1363,7 +1363,7 @@
       opacity: 0.9;
     }
   </style>
-  <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+  <!-- Dialogflow removed - using direct Gemini AI instead -->
 </head>
 <body>
   <header>
@@ -1375,7 +1375,7 @@
         <div class="feature-pill">🌦️ Live Weather</div>
         <div class="feature-pill">🚇 Tube Status</div>
         <div class="feature-pill">💷 Currency Convert</div>
-        <div class="feature-pill">🤖 Jojo AI Bot</div>
+        <div class="feature-pill">🤖 Gemini AI Chat</div>
         <div class="feature-pill">🗺️ Trip Planner</div>
       </div>
       <div class="hero-description">
@@ -1383,7 +1383,7 @@
         we're here to make your London experience extraordinary. Get real-time updates, personalized itineraries,
         and insider tips - all powered by AI to ensure you never miss a moment.</p>
         <p>Need help? Just ask our Jojo AI Bot! Available 24/7 to answer all your London-related questions,
-        from finding the best restaurants to planning your daily routes. Look for the chat icon in the bottom right corner! 🤖</p>
+        from finding the best restaurants to planning your daily routes. Click the <strong>🤖 Ask Jojo AI</strong> button in the bottom left corner!</p>
       </div>
       <button class="btn" onclick="scrollToSection('features')">Start Exploring</button>
     </div>
@@ -1686,12 +1686,83 @@
     </section>
   </div>
 
-  <df-messenger
-    chat-icon="https://drive.google.com/uc?export=view&id=1VsoSncOJ78o9WZ9maLqN0MwDVpA9NNgO"
-    chat-title="🤖 Jojo AI Bot"
-    agent-id="19787e79-c4bb-4fd5-bdff-85dedd2de68d"
-    language-code="en"
-  ></df-messenger>
+  <!-- Gemini AI Chat Widget -->
+  <div id="gemini-chat" style="
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 320px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    z-index: 999;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: 'Poppins', sans-serif;
+  ">
+    <div style="background: #2c3e50; color: white; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-weight: 600; font-size: 15px;">🤖 Ask Jojo AI</span>
+      <span onclick="toggleGeminiChat()" style="cursor:pointer;font-size:18px;">✕</span>
+    </div>
+    <div id="gemini-messages" style="
+      height: 280px;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #fafafa;
+    ">
+      <div style="background:#f1f3f4;border-radius:18px 18px 18px 4px;padding:10px 14px;font-size:14px;color:#202124;max-width:80%;">
+        Hi! I'm Jojo 👋 Ask me anything about London — attractions, food, transport, tips and more!
+      </div>
+    </div>
+    <div style="display: flex; padding: 10px; gap: 8px; border-top: 1px solid #eee; background: white;">
+      <input id="gemini-input" type="text" placeholder="Ask about London..." style="
+        flex: 1;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        padding: 8px 14px;
+        font-size: 14px;
+        outline: none;
+        font-family: 'Poppins', sans-serif;
+      ">
+      <button id="gemini-send" style="
+        background: #2c3e50;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">➤</button>
+    </div>
+  </div>
+
+  <!-- Toggle button for Gemini chat -->
+  <button onclick="toggleGeminiChat()" style="
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 999;
+    font-family: 'Poppins', sans-serif;
+  ">🤖 Ask Jojo AI</button>
+
+  <!-- Dialogflow removed -->
 
   <div class="notification-badge" id="notification">
     <span id="notification-text"></span>
@@ -1713,46 +1784,7 @@
   </footer>
 
   <script>
-    // ==== DIALOGFLOW MESSENGER HELPERS ====
-    function askExample(question) {
-      const dfMessenger = document.querySelector("df-messenger");
-      showNotification("Sending your question: " + question);
-
-      setTimeout(() => {
-        try {
-          if (dfMessenger) {
-            const chat = dfMessenger.shadowRoot.querySelector('df-messenger-chat');
-
-            if (chat && chat.getAttribute('opened') !== 'true') {
-              const chatIcon = dfMessenger.shadowRoot.querySelector('df-messenger-chat-bubble');
-              if (chatIcon) chatIcon.click();
-            }
-
-            setTimeout(() => {
-              try {
-                const messenger = dfMessenger.shadowRoot.querySelector("df-messenger-chat");
-                const userInput = messenger.shadowRoot.querySelector("df-messenger-user-input");
-                const input = userInput.shadowRoot.querySelector("input");
-
-                input.value = question;
-                input.dispatchEvent(new Event("input", { bubbles: true }));
-
-                setTimeout(() => {
-                  const sendButton = userInput.shadowRoot.querySelector("button");
-                  sendButton.click();
-                }, 500);
-              } catch (err) {
-                console.error("Error sending message:", err);
-                showNotification("❌ Couldn't send message. Please try again.");
-              }
-            }, 1500);
-          }
-        } catch (err) {
-          console.error("Error accessing chatbot:", err);
-          showNotification("❌ Couldn't access chatbot. Please try again.");
-        }
-      }, 800);
-    }
+    // ==== QUICK ACCESS BUTTONS — defined after sendGeminiMessage below ====
 
     // ==== WEATHER (via backend proxy - no API key in the browser) ====
     async function getWeather() {
@@ -2479,86 +2511,86 @@
     document.addEventListener('DOMContentLoaded', () => {
       updateWeatherForecast();
       updateTransportStatus();
-      setInterval(updateWeatherForecast, 1800000); // every 30 min
-      setInterval(updateTransportStatus, 300000);  // every 5 min
+      setInterval(updateWeatherForecast, 1800000);
+      setInterval(updateTransportStatus, 300000);
     });
 
-    // ==== GEMINI DIRECT CHAT (bypasses Dialogflow webhook timeout) ====
-    // Greetings that Dialogflow handles fine with static responses — no need to call Gemini
-    const STATIC_INTENTS = ['hi', 'hello', 'hey', 'bye', 'goodbye', 'thanks', 'thank you', 'ok', 'okay', 'yes', 'no'];
-
-    function isStaticMessage(text) {
-      return STATIC_INTENTS.some(word => text.trim().toLowerCase() === word);
+    function toggleGeminiChat() {
+      const chat = document.getElementById('gemini-chat');
+      chat.style.display = chat.style.display === 'none' ? 'flex' : 'none';
+      if (chat.style.display === 'flex') {
+        document.getElementById('gemini-input').focus();
+      }
     }
 
-    async function getGeminiChatResponse(userMessage) {
+    // ==== GEMINI DIRECT CHAT ====
+    const chatMessages = document.getElementById('gemini-messages');
+    const chatInput = document.getElementById('gemini-input');
+    const chatBtn = document.getElementById('gemini-send');
+
+    function appendMessage(text, sender) {
+      const div = document.createElement('div');
+      div.style.cssText = `
+        max-width: 80%;
+        padding: 10px 14px;
+        border-radius: ${sender === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px'};
+        background: ${sender === 'user' ? '#2c3e50' : '#f1f3f4'};
+        color: ${sender === 'user' ? 'white' : '#202124'};
+        margin: ${sender === 'user' ? '6px 0 6px auto' : '6px auto 6px 0'};
+        font-size: 14px;
+        line-height: 1.5;
+        word-wrap: break-word;
+      `;
+      div.textContent = text;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function sendGeminiMessage() {
+      const message = chatInput.value.trim();
+      if (!message) return;
+
+      chatInput.value = '';
+      appendMessage(message, 'user');
+
+      const typing = document.createElement('div');
+      typing.id = 'typing-indicator';
+      typing.style.cssText = 'color:#999;font-size:13px;padding:6px 0;';
+      typing.textContent = 'Jojo is typing...';
+      chatMessages.appendChild(typing);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
       try {
         const response = await fetch(`${BACKEND_URL}/api/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: userMessage })
+          body: JSON.stringify({ message })
         });
-        if (!response.ok) throw new Error('Chat API error');
         const data = await response.json();
-        return data.reply || null;
+        document.getElementById('typing-indicator')?.remove();
+        appendMessage(data.reply || 'Sorry, I could not get an answer right now.', 'bot');
       } catch (err) {
-        console.error('Gemini chat error:', err);
-        return null;
+        document.getElementById('typing-indicator')?.remove();
+        appendMessage('Sorry, something went wrong. Please try again.', 'bot');
       }
     }
 
-    function injectMessageIntoChat(text) {
-      try {
-        const dfMessenger = document.querySelector('df-messenger');
-        if (!dfMessenger) return;
-        const chat = dfMessenger.shadowRoot.querySelector('df-messenger-chat');
-        if (!chat) return;
-        const messageList = chat.shadowRoot.querySelector('df-message-list');
-        if (!messageList) return;
-
-        // Create a bot message element and inject it
-        const msgDiv = document.createElement('div');
-        msgDiv.style.cssText = `
-          background: #f1f3f4;
-          border-radius: 18px 18px 18px 4px;
-          padding: 12px 16px;
-          margin: 8px 16px;
-          max-width: 80%;
-          font-size: 14px;
-          line-height: 1.5;
-          color: #202124;
-          display: inline-block;
-        `;
-        msgDiv.textContent = text;
-
-        const wrapper = document.createElement('div');
-        wrapper.style.cssText = 'display: flex; justify-content: flex-start; margin: 4px 0;';
-        wrapper.appendChild(msgDiv);
-        messageList.appendChild(wrapper);
-        messageList.scrollTop = messageList.scrollHeight;
-      } catch (err) {
-        console.error('Could not inject message:', err);
-      }
-    }
-
-    // Listen for user messages sent to Dialogflow and send them to Gemini in parallel
-    window.addEventListener('df-messenger-loaded', () => {
-      const dfMessenger = document.querySelector('df-messenger');
-      if (!dfMessenger) return;
-
-      dfMessenger.addEventListener('df-request-sent', async (e) => {
-        const userMessage = e.detail?.requestBody?.queryInput?.text?.text;
-        if (!userMessage || isStaticMessage(userMessage)) return;
-
-        // Give Dialogflow 2 seconds to respond first, then overlay with Gemini answer
-        setTimeout(async () => {
-          const geminiReply = await getGeminiChatResponse(userMessage);
-          if (geminiReply) {
-            injectMessageIntoChat(geminiReply);
-          }
-        }, 2000);
+    if (chatBtn) chatBtn.addEventListener('click', sendGeminiMessage);
+    if (chatInput) {
+      chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendGeminiMessage();
       });
-    });
+    }
+
+    // ==== QUICK ACCESS BUTTONS → open Gemini chat and send ====
+    function askExample(question) {
+      const chat = document.getElementById('gemini-chat');
+      chat.style.display = 'flex';
+      setTimeout(() => {
+        document.getElementById('gemini-input').value = question;
+        sendGeminiMessage();
+      }, 100);
+    }
   </script>
 </body>
 </html>
