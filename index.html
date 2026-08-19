@@ -2197,62 +2197,27 @@
         const data = await response.json();
         let generatedItinerary = data.itinerary;
 
-        generatedItinerary = generatedItinerary
-          .replace(/\*+/g, '')
-          .replace(/#{1,6}\s+/g, '')
-          .trim();
-
-        let overviewSection = '';
-        const overviewMatch = generatedItinerary.match(/^(.*?)(?=Day 1:|DAY 1:)/is);
-        if (overviewMatch && overviewMatch[1].trim()) {
-          const overviewText = overviewMatch[1].trim();
-          overviewSection = `
-            <div class="overview-section">
-              <h3>Trip Overview</h3>
-              ${formatOverviewContent(overviewText)}
-            </div>
-          `;
-          generatedItinerary = generatedItinerary.replace(overviewMatch[0], '');
-        }
-
-        let formattedDays = '';
-        const dayPattern = /Day (\d+):|DAY (\d+):|Day (\d+) -|DAY (\d+) -/gi;
-        let dayMatches = [];
-        let match;
-
-        while ((match = dayPattern.exec(generatedItinerary)) !== null) {
-          dayMatches.push({
-            index: match.index,
-            day: match[1] || match[2] || match[3] || match[4],
-            fullMatch: match[0]
-          });
-        }
-
-        for (let i = 0; i < dayMatches.length; i++) {
-          const currentMatch = dayMatches[i];
-          const nextMatch = dayMatches[i + 1];
-          let endIndex = nextMatch ? nextMatch.index : generatedItinerary.length;
-          let dayContent = generatedItinerary.substring(
-            currentMatch.index + currentMatch.fullMatch.length,
-            endIndex
-          ).trim();
-          formattedDays += formatDayContent(currentMatch.day, dayContent);
-        }
-
-        const finalHTML = `
+        // Convert markdown to clean readable HTML
+        const formattedHTML = `
           <div class="itinerary-container">
             <div class="itinerary-header">
               <h2>${days}-Day London Itinerary for ${formatVisitType(visitType)}</h2>
             </div>
-            ${overviewSection}
-            ${formattedDays}
+            <div class="day-section" style="white-space: pre-wrap; line-height: 1.8; padding: 25px; font-size: 15px;">
+              ${generatedItinerary
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/^#{1,3}\s+(.+)$/gm, '<h3 style="color:#2c3e50;margin-top:20px">$1</h3>')
+                .replace(/^\*\s+(.+)$/gm, '• $1')
+                .replace(/\n/g, '<br>')
+              }
+            </div>
             <div style="text-align: center; margin-top: 30px;">
               <a href="javascript:window.print()" class="print-btn">Print Itinerary</a>
             </div>
           </div>
         `;
 
-        itineraryResult.innerHTML = finalHTML;
+        itineraryResult.innerHTML = formattedHTML;
         itineraryResult.style.display = 'block';
       } catch (error) {
         console.error('Error details:', error);
