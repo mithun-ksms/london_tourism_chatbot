@@ -203,7 +203,7 @@ async function getGeminiResponse(userId, userQuery, parameters = {}, intentName 
       }));
 
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
       {
         system_instruction: { parts: [{ text: systemMessage }] },
         contents: geminiContents,
@@ -516,7 +516,7 @@ Question: ${message}`;
 
   try {
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
       { contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 120, temperature: 0.7 } },
       { headers: { "Content-Type": "application/json" } }
     );
@@ -589,7 +589,7 @@ IMPORTANT: Please format with clear sections for each day. Put the schedule in a
 
   try {
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
       { contents: [{ parts: [{ text: prompt }] }] },
       { headers: { "Content-Type": "application/json" } }
     );
@@ -825,7 +825,7 @@ app.post("/api/itinerary", async (req, res) => {
   const prompt = `Create a detailed ${days}-day London itinerary for a ${visitType} trip. Interests include: ${interests.join(", ")}. Daily budget: ${budget}. Include day-by-day time slots (9:00 AM format), specific attractions, transportation info, and budget tips.`;
   try {
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
       { contents: [{ parts: [{ text: prompt }] }] },
       { headers: { "Content-Type": "application/json" } }
     );
