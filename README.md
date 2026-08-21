@@ -176,6 +176,6 @@ When you push a change to GitHub, Render automatically detects it and redeploys 
 
 ## 👤 Author
 
-**Mithun Surriya** — Erasmus Exchange Student  
+**Mithun Surriya** —
 GitHub: [@mithun-ksms](https://github.com/mithun-ksms)  
 Project: London Tourism AI Chatbot — BSc Computer Science Erasmus Project
